@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>ช่วยคิดคำพูดกับผู้หญิง</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#fff0f5;
+    --card:#ffe6f0;
+    --muted:#a8738a;
+    --txt:#5a2a3a;
+    --acc:#ff94c2;
+    --acc-2:#ffb6d9;
+    --ring: rgba(255,148,194,.35);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family:"Noto Sans Thai", system-ui, -apple-system, "Segoe UI", sans-serif;
+    background:
+      radial-gradient(circle at 15% 20%, rgba(255,148,194,.18), transparent 40%),
+      radial-gradient(circle at 85% 80%, rgba(255,182,217,.2), transparent 35%),
+      linear-gradient(180deg, #fff0f7, var(--bg));
+    color:var(--txt);
+    display:grid;
+    place-items:center;
+    padding:24px;
+  }
+  .card{
+    width:min(720px, 100%);
+    background:linear-gradient(180deg, rgba(255,255,255,.65), rgba(255,255,255,.4));
+    border:1px solid rgba(255,148,194,.25);
+    border-radius:24px;
+    padding:28px;
+    box-shadow: 0 20px 50px rgba(255,148,194,.35);
+    backdrop-filter: blur(6px);
+    position:relative;
+  }
+  .badge{
+    display:inline-flex; align-items:center; gap:8px;
+    font-size:.9rem; color:var(--muted);
+    background:rgba(255,182,217,.3);
+    border:1px solid rgba(255,148,194,.3);
+    padding:6px 12px; border-radius:999px;
+  }
+  h1{
+    margin:16px 0 6px; line-height:1.2;
+    font-size:clamp(24px, 5vw, 36px);
+    color:#d63384;
+  }
+  p.lead{ margin:0 0 18px; color:var(--muted) }
+  .row{ display:grid; gap:14px; grid-template-columns: 1fr; }
+  @media (min-width:720px){ .row{ grid-template-columns: 1.2fr .8fr; } }
+
+  label{display:block; font-size:.95rem; color:var(--muted); margin-bottom:6px}
+  input, select, textarea{
+    width:100%; border:1px solid rgba(255,148,194,.4); background:#fff;
+    color:var(--txt); border-radius:14px; padding:12px 14px; outline:none;
+  }
+  input:focus, select:focus, textarea:focus{
+    border-color:var(--acc); box-shadow:0 0 0 6px var(--ring);
+  }
+  textarea{min-height:130px; resize:vertical}
+
+  .btn{
+    cursor:pointer; border:none; border-radius:14px; padding:12px 16px;
+    display:inline-flex; align-items:center; gap:10px; font-weight:700;
+    transition:transform .04s ease, box-shadow .2s ease, background .2s;
+    user-select:none;
+  }
+  .btn:active{ transform: translateY(1px) }
+  .btn.primary{ background:linear-gradient(180deg, var(--acc), #ff6fa5); color:#fff }
+  .btn.ghost{ background:transparent; border:1px solid rgba(255,148,194,.4); color:var(--txt) }
+  .btn.full{ width:100%; justify-content:center }
+  .stack{display:grid; gap:10px}
+
+  .template{
+    background:#fff0f7; border:1px dashed rgba(255,148,194,.4);
+    padding:14px; border-radius:14px; color:#8a3a56; font-size:.98rem
+  }
+  .tips{
+    margin-top:18px; color:var(--muted); font-size:.9rem
+  }
+  .toast{
+    position:fixed; inset:auto 0 18px 0; display:grid; place-items:center; pointer-events:none
+  }
+  .toast > div{
+    background:#ffebf3; border:1px solid rgba(255,148,194,.55);
+    color:#d63384; padding:10px 14px; border-radius:999px; box-shadow:0 8px 30px rgba(0,0,0,.15);
+    opacity:0; transform:translateY(6px); transition:opacity .25s, transform .25s
+  }
+  .toast.show > div{ opacity:1; transform:translateY(0) }
+  .corner{
+    position:absolute; right:16px; top:16px; font-size:.85rem; color:var(--muted)
+  }
+  .corner a{color:var(--acc); text-decoration:none}
+</style>
+</head>
+<body>
+  <main class="card">
+    <div class="corner">💖 ช่วยคิดคำพูดกับผู้หญิง</div>
+
+    <span class="badge">💌 แบบข้อความสุภาพ — ถามว่า “มีแฟนรึยัง?”</span>
+    <h1>มีเรื่องอยากบอกกับ <span id="targetNameText">น้อง</span> สักหน่อย</h1>
+    <p class="lead">ปรับชื่อ/สรรพนาม เลือกโทนข้อความ แล้วกด “คัดลอก” เพื่อส่งในแชตได้เลย</p>
+
+    <div class="row">
+      <!-- Left: controls -->
+      <section>
+        <div style="display:grid; gap:14px">
+          <div>
+            <label for="yourName">ฉันชื่อ</label>
+            <input id="yourName" placeholder="เช่น พี่ต้น">
+          </div>
+          <div>
+            <label for="targetName">เรียกอีกฝ่ายว่า</label>
+            <input id="targetName" placeholder="เช่น มินตรา / น้อง" oninput="syncTarget()" />
+          </div>
+          <div>
+            <label for="tone">โทนข้อความ</label>
+            <select id="tone" onchange="render()">
+              <option value="สุภาพตรงๆ">สุภาพตรงๆ</option>
+              <option value="ชวนคุยก่อน">ชวนคุยก่อน</option>
+              <option value="น่ารักขำๆ">น่ารักขำๆ</option>
+            </select>
+          </div>
+          <div>
+            <label for="channel">จะส่งทาง</label>
+            <select id="channel" onchange="render()">
+              <option>แชต</option>
+              <option>ไอจี</option>
+              <option>ไลน์</option>
+              <option>โน้ต/กระดาษ</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="tips">
+          เคล็ดลับ: เคารพคำตอบเสมอ ถ้าอีกฝ่ายไม่สะดวก ให้ขอบคุณและถอยอย่างสุภาพ 🤝
+        </div>
+      </section>
+
+      <!-- Right: preview & actions -->
+      <section>
+        <label>ข้อความตัวอย่าง</label>
+        <div id="preview" class="template"></div>
+        <div class="stack" style="margin-top:12px">
+          <button class="btn primary full" onclick="copyMsg()">
+            📋 คัดลอกข้อความไว้จีบ
+          </button>
+          <button class="btn ghost full" onclick="render(true)">🔄 สุ่ม/รีเฟรชคำ</button>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div id="toast" class="toast"><div>คัดลอกแล้ว — โชคดีน้า! 💕</div></div>
+
+<script>
+  const el = (id)=>document.getElementById(id);
+  const preview = el('preview');
+  const toast = el('toast');
+
+  function syncTarget(){
+    const t = el('targetName').value.trim() || 'น้อง';
+    document.getElementById('targetNameText').textContent = t;
+    render();
+  }
+
+  function buildMessage(){
+    const me = el('yourName').value.trim() || 'พี่';
+    const you = el('targetName').value.trim() || 'น้อง';
+    const tone = el('tone').value;
+    const via  = el('channel').value;
+
+    const variants = {
+      "สุภาพตรงๆ": [
+        `${you} ว่างคุยสักแป๊บไหม พอดี${me}อยากรู้จักมากขึ้น เลยอยากถามสุภาพ ๆ ว่า ${you}มีแฟนหรือยัง ถ้ายังไม่มี สนใจให้${me}ชวนไปกินขนมสักวันไหม 🙂`,
+        `สวัสดี${you} เราคือ ${me} นะครับ/ค่ะ เห็น${you}แล้วรู้สึกถูกใจ เลยอยากถามตรง ๆ ว่า ตอนนี้${you}มีแฟนรึยัง`
+      ],
+      "ชวนคุยก่อน": [
+        `ช่วงนี้${you}สนใจอะไรอยู่บ้าง เราชอบสไตล์${you}เลยอยากชวนคุยกันบ่อยขึ้น ถ้าโอเค ขอดีเอ็มคุยกันต่อได้ไหม แล้วขอถามนิดนึงว่า ${you}มีแฟนหรือยัง`,
+        `${me}อยากรู้จัก${you}มากขึ้น ลองคุยกันใน${via}ได้ไหม ถ้า${you}สะดวก ขอถามด้วยความเคารพว่า ตอนนี้มีแฟนรึยัง`
+      ],
+      "น่ารักขำๆ": [
+        `แบบสำรวจ 1 ข้อ 🤭 ① มีแฟนแล้ว ② ยังไม่มี แต่กำลังรอคนชวนกินชานม ถ้าข้อ② เดี๋ยว${me}อาสาเองได้ไหม`,
+        `ถามเล่น ๆ แต่จริงจังนะ ${you}มีแฟนหรือยัง ถ้ายังไม่มี ขอสมัครเป็นคนชวนไปเดินเล่นหลังเลิกเรียนได้ไหม 😌`
+      ]
+    };
+
+    const list = variants[tone];
+    const msg = list[Math.floor(Math.random()*list.length)];
+    return msg;
+  }
+
+  function render(){
+    preview.textContent = buildMessage();
+  }
+
+  async function copyMsg(){
+    const text = preview.textContent.trim();
+    try{
+      await navigator.clipboard.writeText(text);
+      toast.classList.add('show');
+      setTimeout(()=>toast.classList.remove('show'), 1200);
+    }catch(e){
+      const ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta);
+      ta.select(); document.execCommand('copy'); ta.remove();
+      toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'), 1200);
+    }
+  }
+
+  render();
+</script>
+</body>
+</html>
